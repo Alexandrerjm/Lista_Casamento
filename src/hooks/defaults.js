@@ -1,8 +1,10 @@
 // ─── Configurações padrão ─────────────────────────────────────────────────────
 export const DEFAULT_SETTINGS = {
-  groomName:   "Noivo",
-  brideName:   "Noiva",
-  weddingDate: "",
+  groomName:        "Noivo",
+  brideName:        "Noiva",
+  weddingDate:      "",
+  deliveryAddress:  "",
+  thankYouMessage:  "Agradecemos o carinho por nós e por querer participar dessa nova fase de vida.",
 };
 
 // ─── Itens padrão ─────────────────────────────────────────────────────────────

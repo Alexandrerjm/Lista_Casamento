@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Field } from "./Field";
 import { fmtPrice } from "../hooks/utils";
@@ -5,13 +6,23 @@ import { fmtPrice } from "../hooks/utils";
 export function ReserveModal() {
   const {
     reserveItem, closeReserveModal, confirmReservation,
+    reserveQty, setReserveQty,
     reserveName,  setReserveName,
     reservePhone, setReservePhone,
     reserveMsg,   setReserveMsg,
     reserveError,
+    getSlots,
   } = useApp();
 
   if (!reserveItem) return null;
+
+  const freeCount = getSlots(reserveItem).filter((s) => !s.res).length;
+  const showQtySelector = reserveItem.qty > 1 && freeCount > 1;
+
+  // Ajusta qty se Realtime reduzir os slots disponíveis enquanto o modal está aberto
+  useEffect(() => {
+    if (reserveQty > freeCount && freeCount > 0) setReserveQty(freeCount);
+  }, [freeCount, reserveQty, setReserveQty]);
 
   return (
     <div className="overlay">
@@ -22,13 +33,26 @@ export function ReserveModal() {
             : <span style={{ fontSize: 48, display: "block", marginBottom: 8 }}>{reserveItem.emoji || "🎁"}</span>}
           <h2 className="modal-title">Reservar Presente</h2>
           <p className="modal-item">{reserveItem.name}</p>
-          <p className="modal-price">R$ {fmtPrice(reserveItem.price)}</p>
+          <p className="modal-price">
+            R$ {fmtPrice(reserveItem.price * reserveQty)}
+            {reserveQty > 1 && <span className="modal-price-detail"> ({reserveQty}× R$ {fmtPrice(reserveItem.price)})</span>}
+          </p>
         </div>
 
         <div className="modal-body">
           <p className="modal-desc">
             Preencha seus dados para confirmar. Entraremos em contato para combinar a entrega. 💌
           </p>
+          {showQtySelector && (
+            <Field label={`Quantidade (${freeCount} disponível(is))`}>
+              <div className="qty-selector">
+                <button className="qty-btn" onClick={() => setReserveQty((q) => Math.max(1, q - 1))}>−</button>
+                <span className="qty-value">{reserveQty}</span>
+                <button className="qty-btn" onClick={() => setReserveQty((q) => Math.min(freeCount, q + 1))}>+</button>
+              </div>
+            </Field>
+          )}
+
           <Field label="Seu nome completo *">
             <input
               className="input"

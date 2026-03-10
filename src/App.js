@@ -26,6 +26,9 @@ function AppRouter() {
 
   return (
     <div>
+      {process.env.NODE_ENV === "development" && (
+        <div className="dev-banner">⚙️ AMBIENTE DE DESENVOLVIMENTO — banco dev</div>
+      )}
       {toast && <div className={`toast toast-${toast.type}`}>{toast.msg}</div>}
 
       {page === "splash"       && <SplashPage />}

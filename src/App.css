@@ -4,7 +4,7 @@
 body {
   font-family: 'Georgia', 'Times New Roman', serif;
   color: #3a2e28;
-  background: #faf7f4;
+  background: #d8d7d6;
   padding-bottom: 56px;
 }
 
@@ -178,6 +178,8 @@ body {
 }
 .btn-header:hover { background: rgba(255,255,255,0.1); }
 .btn-header.danger { background: #c0392b; border-color: #c0392b; color: #fff; }
+.btn-header.share  { background: #2e7d5e; border-color: #2e7d5e; color: #fff; }
+.btn-header.share:hover { background: #256650; border-color: #256650; }
 
 .tab-header {
   display: flex;
@@ -502,6 +504,7 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
+  padding: 3px;
 }
 .gift-card:hover {
   transform: translateY(-3px);
@@ -520,7 +523,8 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  padding: 10px;
+  padding: 5px;
+  /* box-shadow: 0 0 5px #888787; */
   border-radius: 12px 12px 0 0;
 }
 .card-image img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
@@ -549,14 +553,14 @@ body {
 
 .card-body    { padding: 13px 15px 15px; display: flex; flex-direction: column; flex: 1; }
 .card-category {
-  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
   color: #b5804a; text-transform: uppercase;
   display: block; margin-bottom: 3px;
 }
 .card-name    { font-size: 14px; font-weight: 700; color: #3a2e28; line-height: 1.3; margin-bottom: 4px; }
 .card-desc    { font-size: 12px; color: #9a8070; line-height: 1.5; margin-bottom: 10px; }
-.card-footer  { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; }
-.card-price   { font-size: 14px; font-weight: 700; color: #b5804a; }
+.card-footer  { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: auto; padding-top: 6px;}
+.card-price   { font-size: 15px; font-weight: 700; color: #b5804a; }
 .my-badge     { font-size: 11px; color: #27ae60; font-weight: 700; }
 .full-badge   { font-size: 11px; color: #999; font-style: italic; }
 
@@ -794,4 +798,228 @@ body {
   .header-inner { flex-direction: column; align-items: flex-start; }
   .gift-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
   .admin-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── Banner de ambiente de desenvolvimento ─────────────────────────────────── */
+.dev-banner {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #e74c3c;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px;
+  z-index: 9999;
+}
+
+/* ─── Botão de compartilhamento (splash) ─────────────────────────────────────── */
+.btn-share {
+  width: 100%;
+  padding: 11px 20px;
+  border: 1.5px dashed #b5804a;
+  border-radius: 10px;
+  background: transparent;
+  color: #b5804a;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-share:hover { background: rgba(181,128,74,0.08); }
+
+/* ─── Seção de compartilhamento (ConfigTab) ──────────────────────────────────── */
+.share-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.share-url {
+  flex: 1;
+  color: #888;
+  background: #f5f0ea;
+  cursor: default;
+}
+.btn-share-copy {
+  padding: 10px 18px;
+  background: #5C3D2E;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.btn-share-copy:hover { opacity: 0.85; }
+
+/* ─── Busca por nome ─────────────────────────────────────────────────────────── */
+.search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.search-input {
+  width: 100%;
+  padding-right: 40px;
+}
+.btn-search-clear {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.btn-search-clear:hover { color: #5C3D2E; }
+.empty-search {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #9a8070;
+  font-size: 15px;
+  padding: 48px 0;
+}
+
+/* ─── Filtro de preço ────────────────────────────────────────────────────────── */
+.price-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.price-filter-label {
+  font-size: 14px;
+  color: #8B6343;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.price-input {
+  width: 140px;
+  flex: 1;
+}
+.price-sep {
+  font-size: 13px;
+  color: #9a8070;
+  white-space: nowrap;
+}
+.price-active-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #f5ede0;
+  border: 1px solid #d4a96a;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 13px;
+  color: #8B6343;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ─── Meus presentes reservados ──────────────────────────────────────────────── */
+.my-reservations-row {
+  margin-bottom: 16px;
+}
+.btn-my-reservations {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1.5px solid #b5804a;
+  border-radius: 20px;
+  background: transparent;
+  color: #8B6343;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-my-reservations:hover {
+  background: rgba(181,128,74,0.08);
+}
+.btn-my-reservations.active {
+  background: #8B6343;
+  color: #fff;
+  border-color: #8B6343;
+}
+.my-res-badge {
+  background: #d4a96a;
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.btn-my-reservations.active .my-res-badge {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ─── Textarea de configurações ──────────────────────────────────────────────── */
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* ─── Link do produto no card ────────────────────────────────────────────────── */
+.card-link {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: #8B6343;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.card-link:hover { opacity: 0.7; }
+
+/* ─── Seletor de quantidade no modal de reserva ──────────────────────────────── */
+.qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+.qty-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #b5804a;
+  background: transparent;
+  color: #8B6343;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.qty-btn:hover { background: #8B6343; color: #fff; }
+.qty-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #5C3D2E;
+  min-width: 24px;
+  text-align: center;
+}
+.modal-price-detail {
+  font-size: 13px;
+  color: #9a8070;
+  font-weight: normal;
+  margin-left: 4px;
 }

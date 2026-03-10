@@ -14,14 +14,17 @@ function dbItemToApp(row) {
     emoji:       row.emoji      || "🎁",
     imageUrl:    row.imagem_url || "",
     description: row.descricao  || "",
+    link:        row.link       || "",
   };
 }
 
 function dbSettingsToApp(row) {
   return {
-    groomName:   row.groom_name   || DEFAULT_SETTINGS.groomName,
-    brideName:   row.bride_name   || DEFAULT_SETTINGS.brideName,
-    weddingDate: row.wedding_date || DEFAULT_SETTINGS.weddingDate,
+    groomName:       row.groom_name        || DEFAULT_SETTINGS.groomName,
+    brideName:       row.bride_name        || DEFAULT_SETTINGS.brideName,
+    weddingDate:     row.wedding_date      || DEFAULT_SETTINGS.weddingDate,
+    deliveryAddress: row.delivery_address  || DEFAULT_SETTINGS.deliveryAddress,
+    thankYouMessage: row.thank_you_message || DEFAULT_SETTINGS.thankYouMessage,
   };
 }
 
@@ -50,9 +53,13 @@ export function AppProvider({ children }) {
   const [guestEmail,    setGuestEmail]    = useState("");
   const [currentGuest,  setCurrentGuest]  = useState(null);
   const [filterCat,     setFilterCat]     = useState("Todos");
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [priceMin,      setPriceMin]      = useState("");
+  const [priceMax,      setPriceMax]      = useState("");
   const [cancelConfirm, setCancelConfirm] = useState(null);
 
   const [reserveItem,  setReserveItem]  = useState(null);
+  const [reserveQty,   setReserveQty]   = useState(1);
   const [reserveName,  setReserveName]  = useState("");
   const [reservePhone, setReservePhone] = useState("");
   const [reserveMsg,   setReserveMsg]   = useState("");
@@ -194,6 +201,7 @@ export function AppProvider({ children }) {
   // ── Reservas ──────────────────────────────────────────────────────────────────
   function openReserveModal(item) {
     if (isFull(item)) return;
+    setReserveQty(1);
     setReserveItem(item);
     const fallback = currentGuest ? currentGuest.email.split("@")[0] : "admin";
     setReserveName(lastGuestInfo.current.name || fallback);
@@ -206,23 +214,49 @@ export function AppProvider({ children }) {
   async function confirmReservation() {
     if (!reserveName.trim())  { setReserveError("Informe seu nome.");     return; }
     if (!reservePhone.trim()) { setReserveError("Informe seu telefone."); return; }
-    const freeSlot = getSlots(reserveItem).find((s) => !s.res);
-    if (!freeSlot) { setReserveError("Sem vagas disponíveis."); return; }
+    const freeSlots = getSlots(reserveItem).filter((s) => !s.res);
+    if (!freeSlots.length) { setReserveError("Sem vagas disponíveis."); return; }
+    if (reserveQty > freeSlots.length) {
+      setReserveError(`Apenas ${freeSlots.length} unidade(s) disponível(is).`);
+      return;
+    }
 
-    const { error } = await supabase.from("reservations").insert({
-      key:     freeSlot.key,
+    const slotsToReserve = freeSlots.slice(0, reserveQty);
+    const date = new Date().toLocaleString("pt-BR");
+    const rows = slotsToReserve.map((slot) => ({
+      key:     slot.key,
       item_id: reserveItem.id,
       name:    reserveName.trim(),
       email:   currentGuest?.email ?? "admin",
       phone:   reservePhone.trim(),
       message: reserveMsg.trim(),
-      date:    new Date().toLocaleString("pt-BR"),
-    });
+      date,
+    }));
+
+    const { error } = await supabase.from("reservations").insert(rows);
     if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
 
-    lastGuestInfo.current = { name: reserveName.trim(), phone: reservePhone.trim() };
+    // Captura os dados necessários antes de zerar o estado
+    const confirmedName  = reserveName.trim();
+    const confirmedPhone = reservePhone.trim().replace(/\D/g, "");
+    const confirmedItem  = reserveItem.name;
+
+    lastGuestInfo.current = { name: confirmedName, phone: reservePhone.trim() };
     setReserveItem(null);
-    showToast(`🎉 "${reserveItem.name}" reservado!`);
+    showToast(`🎉 "${confirmedItem}" reservado!`);
+
+    // Abre WhatsApp com mensagem personalizada — exige mínimo 10 dígitos (DDD + número)
+    if (confirmedPhone.length >= 10) {
+      const thanks  = settings.thankYouMessage?.trim() || DEFAULT_SETTINGS.thankYouMessage;
+      const address = settings.deliveryAddress?.trim();
+      const addressLine = address
+        ? `\n\nCaso queira enviar o presente, pode enviar para o endereço:\n${address}`
+        : "";
+      const qtyLine = reserveQty > 1 ? ` (${reserveQty} unidades)` : "";
+      const msg   = `${thanks}\n\n${confirmedName}, sua reserva de *${confirmedItem}*${qtyLine} foi confirmada! 🎁${addressLine}`;
+      const waUrl = `https://wa.me/55${confirmedPhone}?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+    }
   }
 
   async function cancelReservation(key) {
@@ -240,7 +274,7 @@ export function AppProvider({ children }) {
 
   // ── CRUD itens ────────────────────────────────────────────────────────────────
   function openNewItem(category = "") {
-    setEditItem({ id: null, name: "", category, price: "", emoji: "🎁", imageUrl: "", description: "", qty: 1 });
+    setEditItem({ id: null, name: "", category, price: "", emoji: "🎁", imageUrl: "", description: "", link: "", qty: 1 });
     setShowForm(true);
   }
 
@@ -254,7 +288,7 @@ export function AppProvider({ children }) {
     const row = {
       nome: editItem.name.trim(), category: editItem.category,
       valor: price, qty, emoji: editItem.emoji,
-      imagem_url: editItem.imageUrl, descricao: editItem.description,
+      imagem_url: editItem.imageUrl, descricao: editItem.description, link: editItem.link || "",
     };
     // id null = novo item — banco gera o bigint automaticamente via bigserial
     const isExisting = editItem.id !== null && items.some((i) => i.id === editItem.id);
@@ -280,9 +314,11 @@ export function AppProvider({ children }) {
     }
     const payload = {
       id:           1,
-      groom_name:   settingsForm.groomName,
-      bride_name:   settingsForm.brideName,
-      wedding_date: settingsForm.weddingDate,
+      groom_name:        settingsForm.groomName,
+      bride_name:        settingsForm.brideName,
+      wedding_date:      settingsForm.weddingDate,
+      delivery_address:  settingsForm.deliveryAddress,
+      thank_you_message: settingsForm.thankYouMessage,
     };
     const { data: existing } = await supabase.from("settings").select("id").eq("id", 1).single();
     const { error } = existing
@@ -296,9 +332,32 @@ export function AppProvider({ children }) {
   const categories = useMemo(
     () => ["Todos", ...new Set(items.map((i) => i.category).filter(Boolean))], [items]);
 
-  const filteredItems = useMemo(
-    () => filterCat === "Todos" ? items : items.filter((i) => i.category === filterCat),
-    [items, filterCat]);
+  // Range real de preços — usado para mostrar referência ao convidado
+  const priceRange = useMemo(() => {
+    if (!items.length) return { min: 0, max: 0 };
+    const prices = items.map((i) => i.price).filter((p) => p > 0);
+    return { min: Math.min(...prices), max: Math.max(...prices) };
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    // Filtro 1: categoria
+    const byCategory = filterCat === "Todos" ? items : items.filter((i) => i.category === filterCat);
+    // Filtro 2: busca por nome/descrição
+    const q = searchQuery.trim().toLowerCase();
+    const bySearch = q
+      ? byCategory.filter((i) =>
+          i.name.toLowerCase().includes(q) ||
+          (i.description && i.description.toLowerCase().includes(q))
+        )
+      : byCategory;
+    // Filtro 3: faixa de preço
+    const min = priceMin !== "" ? parseFloat(priceMin) : null;
+    const max = priceMax !== "" ? parseFloat(priceMax) : null;
+    return bySearch.filter((i) =>
+      (min === null || i.price >= min) &&
+      (max === null || i.price <= max)
+    );
+  }, [items, filterCat, searchQuery, priceMin, priceMax]);
 
   const allReservations = useMemo(
     () => Object.entries(reservations).map(([key, res]) => {
@@ -315,9 +374,10 @@ export function AppProvider({ children }) {
 
   const value = {
     page, navigate, items, settings, loading, error, retry, toast,
-    guestEmail, setGuestEmail, currentGuest, filterCat, setFilterCat,
+    guestEmail, setGuestEmail, currentGuest, filterCat, setFilterCat, searchQuery, setSearchQuery,
+    priceMin, setPriceMin, priceMax, setPriceMax, priceRange,
     cancelConfirm, setCancelConfirm,
-    reserveItem, reserveName, setReserveName, reservePhone, setReservePhone,
+    reserveItem, reserveQty, setReserveQty, reserveName, setReserveName, reservePhone, setReservePhone,
     reserveMsg, setReserveMsg, reserveError,
     openReserveModal, closeReserveModal, confirmReservation, cancelOwnReservation,
     adminEmail, setAdminEmail, adminPassword, setAdminPassword,

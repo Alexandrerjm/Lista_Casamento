@@ -37,6 +37,15 @@ export function GiftCard({ item }) {
         {item.category && <span className="card-category">{item.category}</span>}
         <h3 className="card-name">{item.name}</h3>
         {item.description && <p className="card-desc">{item.description}</p>}
+        {item.link && (
+          <a
+            className="card-link"
+            href={/^https?:\/\//.test(item.link) ? item.link : `https://${item.link}`}
+            target="_blank"
+            rel="noopener noreferrer">
+            🔗 Ver produto
+          </a>
+        )}
         <div className="card-footer">
           <span className="card-price">R$ {fmtPrice(item.price)}</span>
           {myRes

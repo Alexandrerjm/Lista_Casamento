@@ -93,8 +93,18 @@ export function ItemFormModal() {
           </div>
 
           <Field label="Descrição">
-            <input className="input" value={editItem.description} placeholder="Breve descrição"
-              onChange={(e) => setEditItem((prev) => ({ ...prev, description: e.target.value }))} />
+            <textarea
+              className="input textarea"
+              rows={3}
+              placeholder="Breve descrição do item"
+              value={editItem.description}
+              onChange={(e) => setEditItem((prev) => ({ ...prev, description: e.target.value }))}
+            />
+          </Field>
+
+          <Field label="Link (opcional)">
+            <input className="input" value={editItem.link ?? ""} placeholder="https://..."
+              onChange={(e) => setEditItem((prev) => ({ ...prev, link: e.target.value }))} />
           </Field>
 
           <div className="form-row">
