@@ -124,7 +124,7 @@ body {
   border: 2px solid #c9a87a;
   background: transparent;
   color: #7a6050;
-  font-size: 13px;
+  font-size: 15px;
   font-family: 'Georgia', serif;
   cursor: pointer;
   transition: background 0.2s;
@@ -504,7 +504,6 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
-  padding: 3px;
 }
 .gift-card:hover {
   transform: translateY(-3px);
@@ -523,8 +522,7 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  padding: 5px;
-  /* box-shadow: 0 0 5px #888787; */
+  padding: 10px;
   border-radius: 12px 12px 0 0;
 }
 .card-image img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
@@ -553,14 +551,14 @@ body {
 
 .card-body    { padding: 13px 15px 15px; display: flex; flex-direction: column; flex: 1; }
 .card-category {
-  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  font-size: 12px; font-weight: 700; letter-spacing: 2px;
   color: #b5804a; text-transform: uppercase;
   display: block; margin-bottom: 3px;
 }
 .card-name    { font-size: 14px; font-weight: 700; color: #3a2e28; line-height: 1.3; margin-bottom: 4px; }
-.card-desc    { font-size: 12px; color: #9a8070; line-height: 1.5; margin-bottom: 10px; }
-.card-footer  { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: auto; padding-top: 6px;}
-.card-price   { font-size: 15px; font-weight: 700; color: #b5804a; }
+.card-desc    { font-size: 14px; color: #9a8070; line-height: 1.5; margin: 10px, 0px, 10px, 0px;}
+.card-footer  { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; padding-top: 6px;}
+.card-price   { font-size: 16px; font-weight: 700; color: #b5804a; }
 .my-badge     { font-size: 11px; color: #27ae60; font-weight: 700; }
 .full-badge   { font-size: 11px; color: #999; font-style: italic; }
 
@@ -980,7 +978,7 @@ body {
 /* ─── Link do produto no card ────────────────────────────────────────────────── */
 .card-link {
   display: inline-block;
-  margin-top: 2px;
+  margin-top: 5px;
   font-size: 13px;
   color: #8B6343;
   text-decoration: none;
@@ -1023,3 +1021,186 @@ body {
   font-weight: normal;
   margin-left: 4px;
 }
+
+/* ─── Presença na Splash ──────────────────────────────────────────────────────── */
+.btn-presenca {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c5cbf, #a29bfe);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+.btn-presenca:hover { opacity: 0.88; }
+
+.presenca-confirmed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #166534;
+}
+.presenca-cancel-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: normal;
+  color: #555;
+}
+.presenca-cancel-link {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+.presenca-cancel-link:hover { color: #e74c3c; }
+.presenca-counter {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #9a8070;
+  text-align: center;
+}
+
+/* ─── Botões de presença na ListPage ─────────────────────────────────────────── */
+.presenca-row {
+  margin-bottom: 20px;
+}
+.presenca-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn-presenca-confirm {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 1.5px solid #5dade2;
+  background: transparent;
+  color: #2e86c1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-presenca-confirm:hover { background: #2e86c1; color: #fff; }
+.btn-presenca-absent {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 1.5px solid #e74c3c;
+  background: transparent;
+  color: #c0392b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-presenca-absent:hover { background: #c0392b; color: #fff; }
+.presenca-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.presenca-status.confirmed { background: #eaf6fb; color: #2e86c1; border: 1.5px solid #5dade2; }
+.presenca-status.absent    { background: #fdf0ef; color: #c0392b; border: 1.5px solid #e74c3c; }
+
+/* ─── PresencaTab ────────────────────────────────────────────────────────────── */
+.presenca-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 16px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #f0ece8;
+}
+.presenca-section-title.confirmed { color: #2e86c1; border-color: #aed6f1; }
+.presenca-section-title.absent    { color: #c0392b; border-color: #f1948a; }
+
+/* ─── Botão flutuante de presença ────────────────────────────────────────────── */
+.btn-presenca-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  padding: 12px 20px;
+  border-radius: 28px;
+  border: none;
+  background: #8B6343;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-presenca-fab:hover { background: #6e4e34; transform: scale(1.04); }
+.btn-presenca-fab.confirmed { background: #2e86c1; cursor: default; }
+.btn-presenca-fab.confirmed:hover { background: #2e86c1; transform: none; }
+.btn-presenca-fab.absent { background: #7f8c8d; cursor: default; }
+.btn-presenca-fab.absent:hover { background: #7f8c8d; transform: none; }
+
+/* ─── Botões dentro do modal de presença ─────────────────────────────────────── */
+.presenca-modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+.btn-presenca-modal-yes {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #27ae60;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-presenca-modal-yes:hover { background: #1e8449; }
+.btn-presenca-modal-no {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-presenca-modal-no:hover { background: #c0392b; }
+.btn-presenca-modal-skip {
+  padding: 8px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn-presenca-modal-skip:hover { color: #666; }
+
+/* ─── Botão de presença na NavBar ────────────────────────────────────────────── */
+.btn-header.presenca-ok      { color: #27ae60; border-color: #27ae60; }
+.btn-header.presenca-out     { color: #7f8c8d; border-color: #7f8c8d; cursor: default; }
+.btn-header.presenca-pending { color: #8B6343; }

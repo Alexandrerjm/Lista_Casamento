@@ -6,8 +6,8 @@ import { useCopyLink } from "../hooks/utils";
 export function SplashPage() {
   const { settings, navigate } = useApp();
   const { copied, copy } = useCopyLink();
-  // Usa window.location.origin para garantir a URL raiz do site (sem path ou hash)
   const siteUrl = window.location.origin;
+
   return (
     <div className="full-bg">
       <div className="splash-card">
@@ -20,7 +20,7 @@ export function SplashPage() {
           Acesse a lista de presentes abaixo.
         </p>
         <button className="btn-primary" onClick={() => navigate("guest-login")}>Ver Lista de Presentes 🎁</button>
-        <button className="btn-ghost"   onClick={() => navigate("admin-login")}>Acesso dos Noivos 🔐</button>
+        <button className="btn-ghost" onClick={() => navigate("admin-login")}>Acesso dos Noivos 🔐</button>
         <button className="btn-share" onClick={() => copy(siteUrl)}>
           {copied ? "✅ Link copiado!" : "🔗 Compartilhar Lista"}
         </button>

@@ -1,7 +1,7 @@
 import { useApp } from "../context/AppContext";
 
 export function NavBar() {
-  const { page, adminTab, isAdmin, allReservations, totalSlots, navigate, logout, adminLogout, showToast } = useApp();
+  const { page, adminTab, isAdmin, currentGuest, allReservations, totalSlots, navigate, logout, adminLogout, showToast, minhaPresenca, setPresencaConfirm, setPresencaName, setPresencaPhone, setPresencaError, setShowPresencaStatus } = useApp();
 
   const handleLogout = isAdmin ? adminLogout : logout;
 
@@ -34,9 +34,29 @@ export function NavBar() {
         🎁 Lista
       </button>
 
+      {currentGuest && !isAdmin && (
+        <button
+          className={`btn-header${minhaPresenca ? (minhaPresenca.status === "confirmado" ? " presenca-ok" : " presenca-out") : " presenca-pending"}`}
+          onClick={() => {
+            if (minhaPresenca) {
+              setShowPresencaStatus(true);
+            } else {
+              setPresencaName(""); setPresencaPhone(""); setPresencaError("");
+              setPresencaConfirm(true);
+            }
+          }}
+          title={minhaPresenca ? (minhaPresenca.status === "confirmado" ? "Presença confirmada" : "Não vai comparecer") : "Confirmar presença"}
+        >
+          {minhaPresenca
+            ? (minhaPresenca.status === "confirmado" ? "✅ Presença" : "❌ Presença")
+            : "🎊 Presença"}
+        </button>
+      )}
+
       {isAdmin && [
         ["reservas",      "📋 Reservas"],
         ["itens",         "🎁 Itens"],
+        ["presenca",       "🎊 Presença"],
         ["configuracoes", "⚙️ Config"],
       ].map(([key, label]) => (
         <button

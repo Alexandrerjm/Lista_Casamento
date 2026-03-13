@@ -56,7 +56,16 @@ export function AppProvider({ children }) {
   const [searchQuery,   setSearchQuery]   = useState("");
   const [priceMin,      setPriceMin]      = useState("");
   const [priceMax,      setPriceMax]      = useState("");
-  const [cancelConfirm, setCancelConfirm] = useState(null);
+  const [cancelConfirm,    setCancelConfirm]    = useState(null);
+
+  // ── Presença ──────────────────────────────────────────────────────────────────
+  const [presencas,        setPresencas]        = useState([]);
+  const [presencaName,     setPresencaName]      = useState("");
+  const [presencaPhone,    setPresencaPhone]     = useState("");
+  const [presencaError,    setPresencaError]     = useState("");
+  const [presencaConfirm,  setPresencaConfirm]   = useState(false); // modal aberto
+  const [showPresencaStatus, setShowPresencaStatus] = useState(false);  // modal ver/cancelar status
+  const [presencaDelete,   setPresencaDelete]    = useState(null);
 
   const [reserveItem,  setReserveItem]  = useState(null);
   const [reserveQty,   setReserveQty]   = useState(1);
@@ -92,6 +101,10 @@ export function AppProvider({ children }) {
         supabase.from("reservations").select("*")
           .then(({ data }) => data && setReservations(dbReservationsToMap(data)));
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "presencas" }, () => {
+        supabase.from("presencas").select("*").order("created_at")
+          .then(({ data }) => data && setPresencas(data));
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "settings" }, () => {
         supabase.from("settings").select("*").eq("id", 1).single()
           .then(({ data }) => { if (data) { const s = dbSettingsToApp(data); setSettings(s); setSettingsForm(s); } });
@@ -107,21 +120,26 @@ export function AppProvider({ children }) {
       if (session) setIsAdmin(true);
 
       const [
-        { data: itemRows,    error: e1 },
-        { data: resRows,     error: e2 },
-        { data: settingsRow, error: e3 },
+        { data: itemRows,     error: e1 },
+        { data: resRows,      error: e2 },
+        { data: settingsRow,  error: e3 },
+        { data: presencaData, error: e4 },
       ] = await Promise.all([
         supabase.from("itens").select("*").order("id"),
         supabase.from("reservations").select("*"),
         supabase.from("settings").select("*").eq("id", 1).single(),
+        supabase.from("presencas").select("*").order("created_at"),
       ]);
 
       if (e1) throw new Error(e1.message);
       if (e2) throw new Error(e2.message);
+      if (e3 && e3.code !== "PGRST116") throw new Error(e3.message); // PGRST116 = row not found (settings ainda vazio)
+      if (e4) throw new Error(e4.message);
 
       const loadedItems    = (itemRows || []).map(dbItemToApp);
       const loadedResMap   = dbReservationsToMap(resRows);
       const loadedSettings = settingsRow ? dbSettingsToApp(settingsRow) : DEFAULT_SETTINGS;
+      if (presencaData) setPresencas(presencaData);
 
       setItems(loadedItems);
       setReservations(loadedResMap);
@@ -152,6 +170,9 @@ export function AppProvider({ children }) {
     if (!email || !email.includes("@")) { showToast("Informe um e-mail válido.", "err"); return; }
     setCurrentGuest({ email });
     setPage("list");
+    // Abre o modal só se o convidado ainda não respondeu (primeira vez)
+    const jaRespondeu = presencas.some((p) => p.email === email);
+    if (!jaRespondeu) setPresencaConfirm(true);
   }
 
   // ── Auth: admin via Supabase Auth ─────────────────────────────────────────────
@@ -257,6 +278,77 @@ export function AppProvider({ children }) {
       const waUrl = `https://wa.me/55${confirmedPhone}?text=${encodeURIComponent(msg)}`;
       window.open(waUrl, "_blank", "noopener,noreferrer");
     }
+  }
+
+  // ── Funções de presença ──────────────────────────────────────────────────────
+  async function confirmarPresenca() {
+    if (!presencaName.trim())  { setPresencaError("Informe seu nome.");     return; }
+    if (!presencaPhone.trim()) { setPresencaError("Informe seu telefone."); return; }
+
+    const novaPresenca = {
+      name:   presencaName.trim(),
+      phone:  presencaPhone.trim(),
+      email:  currentGuest?.email ?? "",
+      date:   new Date().toLocaleString("pt-BR"),
+      status: "confirmado",
+    };
+    const { data, error } = await supabase.from("presencas").insert(novaPresenca).select().single();
+    if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+
+    // Optimistic update — reflete imediatamente sem esperar Realtime
+    if (data) setPresencas((prev) => [...prev, data]);
+
+    setPresencaConfirm(false);
+    setPresencaName("");
+    setPresencaPhone("");
+    setPresencaError("");
+    showToast("🎉 Presença confirmada! Até lá!");
+  }
+
+  async function registrarAusencia() {
+    if (!presencaName.trim()) { setPresencaError("Informe seu nome."); return; }
+
+    const novaAusencia = {
+      name:   presencaName.trim(),
+      phone:  presencaPhone.trim() || "",
+      email:  currentGuest?.email ?? "",
+      date:   new Date().toLocaleString("pt-BR"),
+      status: "ausente",
+    };
+    const { data, error } = await supabase.from("presencas").insert(novaAusencia).select().single();
+    if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+
+    // Optimistic update
+    if (data) setPresencas((prev) => [...prev, data]);
+
+    setPresencaConfirm(false);
+    setPresencaName("");
+    setPresencaPhone("");
+    setPresencaError("");
+    showToast("Recebemos sua resposta. Sentiremos sua falta! 💙", "info");
+  }
+
+  async function cancelarPresenca(id) {
+    const { error } = await supabase.from("presencas").delete().eq("id", id);
+    if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+    // Optimistic update
+    setPresencas((prev) => prev.filter((p) => p.id !== id));
+    setPresencaDelete(null);
+    showToast("Presença cancelada.", "info");
+  }
+
+  // Verifica se o convidado atual já confirmou presença
+  const minhaPresenca = presencas.find(
+    (p) => p.email === (currentGuest?.email ?? "")
+  ) || null;
+
+  async function cancelarMinhaPresenca() {
+    if (!minhaPresenca) return;
+    const { error } = await supabase.from("presencas").delete().eq("id", minhaPresenca.id);
+    if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+    // Optimistic update
+    setPresencas((prev) => prev.filter((p) => p.id !== minhaPresenca.id));
+    showToast("Sua presença foi cancelada.", "info");
   }
 
   async function cancelReservation(key) {
@@ -375,6 +467,11 @@ export function AppProvider({ children }) {
   const value = {
     page, navigate, items, settings, loading, error, retry, toast,
     guestEmail, setGuestEmail, currentGuest, filterCat, setFilterCat, searchQuery, setSearchQuery,
+    presencas, presencaName, setPresencaName, presencaPhone, setPresencaPhone,
+    presencaError, setPresencaError, presencaConfirm, setPresencaConfirm,
+    showPresencaStatus, setShowPresencaStatus,
+    presencaDelete, setPresencaDelete, confirmarPresenca, registrarAusencia, cancelarPresenca,
+    minhaPresenca, cancelarMinhaPresenca,
     priceMin, setPriceMin, priceMax, setPriceMax, priceRange,
     cancelConfirm, setCancelConfirm,
     reserveItem, reserveQty, setReserveQty, reserveName, setReserveName, reservePhone, setReservePhone,

@@ -4,6 +4,7 @@ import { fmtPrice } from "../hooks/utils";
 import { NavBar } from "../components/NavBar";
 import { GiftCard } from "../components/GiftCard";
 import { ReserveModal } from "../components/ReserveModal";
+import { PresencaModal } from "../components/PresencaModal";
 import { ProgressBar } from "../components/ProgressBar";
 
 export function ListPage() {
@@ -13,6 +14,7 @@ export function ListPage() {
     searchQuery, setSearchQuery,
     priceMin, setPriceMin, priceMax, setPriceMax, priceRange,
     allReservations, reserveItem,
+    minhaPresenca,
   } = useApp();
 
   const [showMyReservations, setShowMyReservations] = useState(false);
@@ -140,6 +142,9 @@ export function ListPage() {
       </div>
 
       {reserveItem && <ReserveModal />}
+      <PresencaModal />
+
+
     </>
   );
 }
