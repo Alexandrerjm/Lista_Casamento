@@ -1204,3 +1204,84 @@ body {
 .btn-header.presenca-ok      { color: #27ae60; border-color: #27ae60; }
 .btn-header.presenca-out     { color: #7f8c8d; border-color: #7f8c8d; cursor: default; }
 .btn-header.presenca-pending { color: #8B6343; }
+
+/* ─── Seção Pix (ListPage) ───────────────────────────────────────────────────── */
+.pix-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0 24px;
+  padding: 28px 24px;
+  background: linear-gradient(135deg, #f0faf4 0%, #e8f8f0 100%);
+  border-radius: 16px;
+  border: 1.5px solid #b2dfdb;
+}
+.pix-section-header {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.pix-section-title {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e6b4a;
+}
+.pix-section-desc {
+  margin: 0;
+  font-size: 15px;
+  color: #4a8c6a;
+}
+.pix-vouchers {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pix-voucher-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 2px solid #27ae60;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 90px;
+}
+.pix-voucher-btn:hover { background: #27ae60; color: #fff; transform: translateY(-2px); }
+.pix-voucher-emoji { font-size: 22px; }
+.pix-voucher-value { font-size: 16px; font-weight: 700; color: #1e6b4a; }
+.pix-voucher-btn:hover .pix-voucher-value { color: #fff; }
+.pix-voucher-label { font-size: 13px; color: #7f8c8d; }
+.pix-voucher-btn:hover .pix-voucher-label { color: #d5f5e3; }
+
+/* ─── Modal Pix ──────────────────────────────────────────────────────────────── */
+.pix-key-box {
+  background: #f0faf4;
+  border: 1.5px solid #b2dfdb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.pix-key-label { font-size: 11px; color: #4a8c6a; margin: 0 0 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.pix-key-value { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pix-key-value span { font-size: 13px; font-weight: 600; color: #1e6b4a; word-break: break-all; }
+.btn-pix-copy { padding: 4px 10px; border-radius: 6px; border: 1px solid #27ae60; background: #fff; color: #27ae60; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.btn-pix-copy:hover { background: #27ae60; color: #fff; }
+.pix-key-hint { font-size: 12px; color: #7f8c8d; margin: 0; line-height: 1.5; }
+
+/* ─── Badge valor Pix (admin) ─────────────────────────────────────────────────── */
+.pix-valor-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #d5f5e3;
+  color: #1e6b4a;
+  font-weight: 700;
+  font-size: 13px;
+}

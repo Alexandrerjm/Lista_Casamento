@@ -5,6 +5,11 @@ export const DEFAULT_SETTINGS = {
   weddingDate:      "",
   deliveryAddress:  "",
   thankYouMessage:  "Agradecemos o carinho por nós e por querer participar dessa nova fase de vida.",
+  pixKey:           "",
+  pixVoucher1:      25,
+  pixVoucher2:      50,
+  pixVoucher3:      75,
+  pixVoucher4:      100,
 };
 
 // ─── Itens padrão ─────────────────────────────────────────────────────────────

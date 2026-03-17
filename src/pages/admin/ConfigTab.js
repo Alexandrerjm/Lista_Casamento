@@ -58,6 +58,33 @@ export function ConfigTab() {
           🔒 Para alterar e-mail ou senha de acesso, use o painel do Supabase em <strong>Authentication → Users</strong>.
         </p>
 
+        {/* ── Seção Pix ────────────────────────────────────────────── */}
+        <h4 className="section-title" style={{ marginTop: 32, marginBottom: 12 }}>💚 Configurações Pix</h4>
+
+        <Field label="Chave Pix (chave aleatória)">
+          <input
+            className="input"
+            placeholder="Ex: 123e4567-e89b-12d3-a456-426614174000"
+            value={settingsForm.pixKey ?? ""}
+            onChange={(e) => setSettingsForm((f) => ({ ...f, pixKey: e.target.value }))}
+          />
+        </Field>
+
+        <div className="form-row">
+          {[1, 2, 3, 4].map((n) => (
+            <Field key={n} label={`Voucher ${n} (R$)`}>
+              <input
+                className="input"
+                type="number"
+                min="1"
+                placeholder={[25, 50, 75, 100][n - 1]}
+                value={settingsForm[`pixVoucher${n}`] ?? ""}
+                onChange={(e) => setSettingsForm((f) => ({ ...f, [`pixVoucher${n}`]: e.target.value }))}
+              />
+            </Field>
+          ))}
+        </div>
+
         <button className="btn-primary" style={{ maxWidth: 240 }} onClick={submitSettings}>
           Salvar Configurações ✅
         </button>

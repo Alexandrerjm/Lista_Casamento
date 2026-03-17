@@ -5,11 +5,13 @@ import { ReservasTab } from "./admin/ReservasTab";
 import { ItensTab } from "./admin/ItensTab";
 import { ConfigTab } from "./admin/ConfigTab";
 import { PresencaTab } from "./admin/PresencaTab";
+import { PixTab } from "./admin/PixTab";
+import { ConvidadosTab } from "./admin/ConvidadosTab";
 import { ItemFormModal } from "./admin/ItemFormModal";
 import { ProgressBar } from "../components/ProgressBar";
 
 export function AdminPage() {
-  const { settings, items, allReservations, totalReservedValue, totalSlots, adminTab, presencas } = useApp();
+  const { settings, items, allReservations, totalReservedValue, totalSlots, adminTab, presencas, contribuicoes, convidados } = useApp();
 
   const summaryCards = [
     { value: items.length,                         label: "Total de Itens",  color: "#f0c060" },
@@ -17,6 +19,8 @@ export function AdminPage() {
     { value: totalSlots - allReservations.length,  label: "Disponíveis",     color: "#58d68d" },
     { value: `R$ ${fmtPrice(totalReservedValue)}`, label: "Valor Reservado", color: "#e59866" },
     { value: presencas.length,                     label: "Presenças",       color: "#a29bfe" },
+    { value: contribuicoes.length,                  label: "Pix",             color: "#00b894" },
+    { value: convidados.length,                     label: "Convidados",      color: "#74b9ff" },
   ];
 
   return (
@@ -49,6 +53,8 @@ export function AdminPage() {
         {adminTab === "reservas"      && <ReservasTab />}
         {adminTab === "itens"         && <ItensTab />}
         {adminTab === "presenca"       && <PresencaTab />}
+        {adminTab === "pix"            && <PixTab />}
+        {adminTab === "convidados"     && <ConvidadosTab />}
         {adminTab === "configuracoes" && <ConfigTab />}
       </div>
 

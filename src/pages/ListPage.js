@@ -5,6 +5,7 @@ import { NavBar } from "../components/NavBar";
 import { GiftCard } from "../components/GiftCard";
 import { ReserveModal } from "../components/ReserveModal";
 import { PresencaModal } from "../components/PresencaModal";
+import { PixModal } from "../components/PixModal";
 import { ProgressBar } from "../components/ProgressBar";
 
 export function ListPage() {
@@ -15,6 +16,7 @@ export function ListPage() {
     priceMin, setPriceMin, priceMax, setPriceMax, priceRange,
     allReservations, reserveItem,
     minhaPresenca,
+    setPixModal, setPixName, setPixError, lastGuestInfo,
   } = useApp();
 
   const [showMyReservations, setShowMyReservations] = useState(false);
@@ -141,7 +143,40 @@ export function ListPage() {
         </div>
       </div>
 
+      {/* ── Seção Pix ────────────────────────────────────────────────── */}
+      {!showMyReservations && (
+        <div className="pix-section">
+          <div className="pix-section-header">
+            <div>
+              <h3 className="pix-section-title">Contribuição via Pix</h3>
+              <p className="pix-section-desc">
+                Não encontrou o presente ideal? Contribua com o valor que quiser para os noivos!
+              </p>
+            </div>
+          </div>
+          <div className="pix-vouchers">
+            {[settings.pixVoucher1, settings.pixVoucher2, settings.pixVoucher3, settings.pixVoucher4]
+              .filter(Boolean).map((valor) => (
+              <button
+                key={valor}
+                className="pix-voucher-btn"
+                onClick={() => {
+                  setPixName(lastGuestInfo.current.name || "");
+                  setPixError("");
+                  setPixModal(valor);
+                }}
+              >
+                <span className="pix-voucher-emoji">💚</span>
+                <span className="pix-voucher-value">R$ {Number(valor).toFixed(2).replace(".", ",")}</span>
+                <span className="pix-voucher-label">Presentear</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {reserveItem && <ReserveModal />}
+      <PixModal />
       <PresencaModal />
 
 

@@ -31,24 +31,64 @@ export function SplashPage() {
 
 // ─── Login do convidado ───────────────────────────────────────────────────────
 export function GuestLoginPage() {
-  const { guestEmail, setGuestEmail, guestLogin, navigate } = useApp();
+  const {
+    guestEmail, setGuestEmail,
+    guestNome, setGuestNome,
+    guestSobrenome, setGuestSobrenome,
+    guestNomeError, setGuestNomeError,
+    convidados, guestLogin, navigate,
+  } = useApp();
+
+  function handleEmailBlur() {
+    const email = guestEmail.trim().toLowerCase();
+    if (!email.includes("@")) return;
+    const encontrado = convidados.find((c) => c.email === email);
+    if (encontrado) {
+      setGuestNome(encontrado.nome || "");
+      setGuestSobrenome(encontrado.sobrenome || "");
+      setGuestNomeError("");
+    }
+  }
+
   return (
     <div className="full-bg">
       <div className="login-card">
         <button className="btn-back" onClick={() => navigate("splash")}>← Voltar</button>
         <div className="login-icon">✉️</div>
         <h2 className="login-title">Identificação do Convidado</h2>
-        <p className="login-desc">Informe seu e-mail para acessar a lista de presentes</p>
+        <p className="login-desc">Informe seus dados para acessar a lista de presentes</p>
         <Field label="Seu e-mail *">
           <input
             className="input"
             type="email"
             placeholder="seuemail@exemplo.com"
             value={guestEmail}
-            onChange={(e) => setGuestEmail(e.target.value)}
+            onChange={(e) => { setGuestEmail(e.target.value); setGuestNome(""); setGuestSobrenome(""); }}
+            onBlur={handleEmailBlur}
             onKeyDown={(e) => e.key === "Enter" && guestLogin()}
           />
         </Field>
+        <div className="form-row">
+          <Field label="Nome *">
+            <input
+              className="input"
+              placeholder="João"
+              value={guestNome}
+              onChange={(e) => setGuestNome(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && guestLogin()}
+            />
+          </Field>
+          <Field label="Sobrenome *">
+            <input
+              className="input"
+              placeholder="Silva"
+              value={guestSobrenome}
+              onChange={(e) => setGuestSobrenome(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && guestLogin()}
+            />
+          </Field>
+        </div>
+        {guestNomeError && <p className="error-msg">{guestNomeError}</p>}
         <button className="btn-primary" onClick={guestLogin}>Entrar na Lista 🎉</button>
       </div>
     </div>

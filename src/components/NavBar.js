@@ -1,7 +1,8 @@
 import { useApp } from "../context/AppContext";
+import { fmtPhone } from "../hooks/utils";
 
 export function NavBar() {
-  const { page, adminTab, isAdmin, currentGuest, allReservations, totalSlots, navigate, logout, adminLogout, showToast, minhaPresenca, setPresencaConfirm, setPresencaName, setPresencaPhone, setPresencaError, setShowPresencaStatus } = useApp();
+  const { page, adminTab, isAdmin, currentGuest, allReservations, totalSlots, navigate, logout, adminLogout, showToast, minhaPresenca, nomeCompletoGuest, lastGuestInfo, setPresencaConfirm, setPresencaName, setPresencaPhone, setPresencaError, setShowPresencaStatus } = useApp();
 
   const handleLogout = isAdmin ? adminLogout : logout;
 
@@ -41,7 +42,9 @@ export function NavBar() {
             if (minhaPresenca) {
               setShowPresencaStatus(true);
             } else {
-              setPresencaName(""); setPresencaPhone(""); setPresencaError("");
+              setPresencaName(nomeCompletoGuest);
+              setPresencaPhone(fmtPhone(lastGuestInfo.current.phone));
+              setPresencaError("");
               setPresencaConfirm(true);
             }
           }}
@@ -57,6 +60,8 @@ export function NavBar() {
         ["reservas",      "📋 Reservas"],
         ["itens",         "🎁 Itens"],
         ["presenca",       "🎊 Presença"],
+        ["pix",            "💚 Pix"],
+        ["convidados",     "👥 Convidados"],
         ["configuracoes", "⚙️ Config"],
       ].map(([key, label]) => (
         <button

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
+import { fmtPhone } from "../hooks/utils";
 import { Field } from "./Field";
 
 export function PresencaModal() {
   const {
     settings,
     presencaName, setPresencaName,
+    nomeCompletoGuest, lastGuestInfo,
     presencaPhone, setPresencaPhone,
     presencaError, setPresencaError,
     presencaConfirm, setPresencaConfirm,
@@ -28,8 +30,8 @@ export function PresencaModal() {
 
   function fecharConfirm() {
     setPresencaConfirm(false);
-    setPresencaName("");
-    setPresencaPhone("");
+    setPresencaName(nomeCompletoGuest);
+    setPresencaPhone(fmtPhone(lastGuestInfo.current.phone));
     setPresencaError("");
   }
 
