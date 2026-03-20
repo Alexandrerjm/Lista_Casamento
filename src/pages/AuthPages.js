@@ -5,9 +5,10 @@ import { useCopyLink } from "../hooks/utils";
 
 // ─── Splash ───────────────────────────────────────────────────────────────────
 export function SplashPage() {
-  const { settings, navigate } = useApp();
+  const { settings, navigate, presencas } = useApp();
   const { copied, copy } = useCopyLink();
   const siteUrl = window.location.origin;
+  const totalConfirmados = presencas.filter((p) => p.status === "confirmado").length;
 
   return (
     <div className="full-bg">
@@ -25,6 +26,12 @@ export function SplashPage() {
         <button className="btn-share" onClick={() => copy(siteUrl)}>
           {copied ? "✅ Link copiado!" : "🔗 Compartilhar Lista"}
         </button>
+
+        {totalConfirmados > 0 && (
+          <p className="presenca-counter">
+            🎉 {totalConfirmados} pessoa(s) já confirmaram presença!
+          </p>
+        )}
       </div>
     </div>
   );

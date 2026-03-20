@@ -1,5 +1,5 @@
 import { useApp } from "../context/AppContext";
-import { fmtPrice } from "./utils";
+import { fmtPrice, fmtPhone } from "./utils";
 
 export function useExportCSV() {
   const { allReservations, settings } = useApp();
@@ -12,7 +12,7 @@ export function useExportCSV() {
       fmtPrice(item.price),
       res.name,
       res.email,
-      res.phone,
+      res.phone ? fmtPhone(res.phone) : "",
       res.date,
       res.message || "",
     ]);

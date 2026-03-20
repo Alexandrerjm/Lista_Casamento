@@ -1226,14 +1226,14 @@ body {
   margin-bottom: 20px;
 }
 .pix-section-title {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   font-size: 18px;
   font-weight: 700;
   color: #1e6b4a;
 }
 .pix-section-desc {
   margin: 0;
-  font-size: 17px;
+  font-size: 15px;
   color: #4a8c6a;
 }
 .pix-vouchers {

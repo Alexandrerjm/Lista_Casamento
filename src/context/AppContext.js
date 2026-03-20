@@ -26,11 +26,11 @@ function dbSettingsToApp(row) {
     weddingDate:     row.wedding_date      || DEFAULT_SETTINGS.weddingDate,
     deliveryAddress: row.delivery_address  || DEFAULT_SETTINGS.deliveryAddress,
     thankYouMessage: row.thank_you_message || DEFAULT_SETTINGS.thankYouMessage,
-    pixKey:          row.pix_key           || DEFAULT_SETTINGS.pixKey,
-    pixVoucher1:     row.pix_voucher1      || DEFAULT_SETTINGS.pixVoucher1,
-    pixVoucher2:     row.pix_voucher2      || DEFAULT_SETTINGS.pixVoucher2,
-    pixVoucher3:     row.pix_voucher3      || DEFAULT_SETTINGS.pixVoucher3,
-    pixVoucher4:     row.pix_voucher4      || DEFAULT_SETTINGS.pixVoucher4,
+    pixKey:          row.pix_key          || DEFAULT_SETTINGS.pixKey,
+    pixVoucher1:     row.pix_voucher1     || DEFAULT_SETTINGS.pixVoucher1,
+    pixVoucher2:     row.pix_voucher2     || DEFAULT_SETTINGS.pixVoucher2,
+    pixVoucher3:     row.pix_voucher3     || DEFAULT_SETTINGS.pixVoucher3,
+    pixVoucher4:     row.pix_voucher4     || DEFAULT_SETTINGS.pixVoucher4,
   };
 }
 

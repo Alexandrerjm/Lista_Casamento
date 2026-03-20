@@ -1,11 +1,13 @@
 import { useApp } from "../../context/AppContext";
+import { fmtPhone } from "../../hooks/utils";
 
 function exportConvidadosCSV(convidados) {
-  const headers = ["Nome", "Sobrenome", "E-mail", "Data de Cadastro"];
+  const headers = ["Nome", "Sobrenome", "E-mail", "Telefone", "Data de Cadastro"];
   const rows = convidados.map((c) => [
     c.nome || "",
     c.sobrenome || "",
     c.email || "",
+    c.phone ? fmtPhone(c.phone) : "",
     new Date(c.created_at).toLocaleString("pt-BR"),
   ]);
   const csvContent = [headers, ...rows]
@@ -44,7 +46,7 @@ export function ConvidadosTab() {
           <table className="data-table">
             <thead>
               <tr>
-                {["#", "Nome", "Sobrenome", "E-mail", "Cadastrado em"].map((h) => (
+                {["#", "Nome", "Sobrenome", "E-mail", "Telefone", "Cadastrado em"].map((h) => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
@@ -57,6 +59,11 @@ export function ConvidadosTab() {
                   <td>{c.sobrenome}</td>
                   <td>
                     <a className="table-link" href={`mailto:${c.email}`}>{c.email}</a>
+                  </td>
+                  <td>
+                    {c.phone
+                      ? <a className="table-link green" href={`https://wa.me/55${c.phone}`} target="_blank" rel="noopener noreferrer">📱 {fmtPhone(c.phone)}</a>
+                      : <span style={{ color: "#aaa" }}>—</span>}
                   </td>
                   <td>{new Date(c.created_at).toLocaleString("pt-BR")}</td>
                 </tr>
