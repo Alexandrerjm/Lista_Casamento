@@ -26,11 +26,11 @@ function dbSettingsToApp(row) {
     weddingDate:     row.wedding_date      || DEFAULT_SETTINGS.weddingDate,
     deliveryAddress: row.delivery_address  || DEFAULT_SETTINGS.deliveryAddress,
     thankYouMessage: row.thank_you_message || DEFAULT_SETTINGS.thankYouMessage,
-    pixKey:          row.pix_key          || DEFAULT_SETTINGS.pixKey,
-    pixVoucher1:     row.pix_voucher1     || DEFAULT_SETTINGS.pixVoucher1,
-    pixVoucher2:     row.pix_voucher2     || DEFAULT_SETTINGS.pixVoucher2,
-    pixVoucher3:     row.pix_voucher3     || DEFAULT_SETTINGS.pixVoucher3,
-    pixVoucher4:     row.pix_voucher4     || DEFAULT_SETTINGS.pixVoucher4,
+    pixKey:          row.pix_key           || DEFAULT_SETTINGS.pixKey,
+    pixVoucher1:     row.pix_voucher1      || DEFAULT_SETTINGS.pixVoucher1,
+    pixVoucher2:     row.pix_voucher2      || DEFAULT_SETTINGS.pixVoucher2,
+    pixVoucher3:     row.pix_voucher3      || DEFAULT_SETTINGS.pixVoucher3,
+    pixVoucher4:     row.pix_voucher4      || DEFAULT_SETTINGS.pixVoucher4,
   };
 }
 
@@ -43,6 +43,8 @@ function dbReservationsToMap(rows) {
     date:    r.date    || "",
   }]));
 }
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const AppContext = createContext(null);
 
@@ -198,7 +200,7 @@ export function AppProvider({ children }) {
   // ── Auth: convidado ───────────────────────────────────────────────────────────
   async function guestLogin() {
     const email = guestEmail.trim().toLowerCase();
-    if (!email || !email.includes("@")) { showToast("Informe um e-mail válido.", "err"); return; }
+    if (!email || !EMAIL_REGEX.test(email)) { showToast("Informe um e-mail válido.", "err"); return; }
     if (!guestNome.trim())      { setGuestNomeError("Informe seu nome.");      return; }
     if (!guestSobrenome.trim()) { setGuestNomeError("Informe seu sobrenome."); return; }
     setGuestNomeError("");
@@ -217,7 +219,7 @@ export function AppProvider({ children }) {
     if (convErr) { showToast("Erro ao salvar dados. Tente novamente.", "err"); return; }
 
     // Para update, convRow não inclui phone — usa o existente
-const phone = existente ? (existente.phone || "") : "";
+    const phone = existente ? (existente.phone || "") : "";
 
     // Optimistic update na lista local — merge para preservar phone no estado
     const convAtualizado = existente ? { ...existente, ...convRow } : convRow;
@@ -291,6 +293,11 @@ const phone = existente ? (existente.phone || "") : "";
   // ── Reservas ──────────────────────────────────────────────────────────────────
   function openReserveModal(item) {
     if (isFull(item)) return;
+    // Bloqueia dupla reserva — convidado já reservou algum slot deste item
+    if (currentGuest?.email) {
+      const jaReservou = getSlots(item).some((s) => s.res?.email === currentGuest.email);
+      if (jaReservou) { showToast("Você já reservou este presente. 🎁", "info"); return; }
+    }
     setReserveQty(1);
     setReserveItem(item);
     const fallback = currentGuest ? currentGuest.email.split("@")[0] : "admin";
@@ -470,9 +477,14 @@ const phone = existente ? (existente.phone || "") : "";
     showToast("Sua presença foi cancelada.", "info");
   }
 
+  function removeReservation(key) {
+    setReservations((prev) => { const next = { ...prev }; delete next[key]; return next; });
+  }
+
   async function cancelReservation(key) {
     const { error } = await supabase.from("reservations").delete().eq("key", key);
     if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+    removeReservation(key);
     setDeleteConfirm(null);
     showToast("Reserva cancelada.", "info");
   }
@@ -480,6 +492,7 @@ const phone = existente ? (existente.phone || "") : "";
   async function cancelOwnReservation(key) {
     const { error } = await supabase.from("reservations").delete().eq("key", key);
     if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+    removeReservation(key);
     showToast("Sua reserva foi cancelada.", "info");
   }
 

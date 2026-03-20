@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Field } from "../components/Field";
 import { useCopyLink } from "../hooks/utils";
@@ -38,6 +39,16 @@ export function GuestLoginPage() {
     guestNomeError, setGuestNomeError,
     convidados, guestLogin, navigate,
   } = useApp();
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  async function handleLogin() {
+    setLoginLoading(true);
+    try {
+      await guestLogin();
+    } finally {
+      setLoginLoading(false);
+    }
+  }
 
   function handleEmailBlur() {
     const email = guestEmail.trim().toLowerCase();
@@ -63,9 +74,9 @@ export function GuestLoginPage() {
             type="email"
             placeholder="seuemail@exemplo.com"
             value={guestEmail}
-            onChange={(e) => { setGuestEmail(e.target.value); setGuestNome(""); setGuestSobrenome(""); }}
+            onChange={(e) => { setGuestEmail(e.target.value); setGuestNome(""); setGuestSobrenome(""); setGuestNomeError(""); }}
             onBlur={handleEmailBlur}
-            onKeyDown={(e) => e.key === "Enter" && guestLogin()}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           />
         </Field>
         <div className="form-row">
@@ -75,7 +86,7 @@ export function GuestLoginPage() {
               placeholder="João"
               value={guestNome}
               onChange={(e) => setGuestNome(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && guestLogin()}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             />
           </Field>
           <Field label="Sobrenome *">
@@ -84,12 +95,14 @@ export function GuestLoginPage() {
               placeholder="Silva"
               value={guestSobrenome}
               onChange={(e) => setGuestSobrenome(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && guestLogin()}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             />
           </Field>
         </div>
         {guestNomeError && <p className="error-msg">{guestNomeError}</p>}
-        <button className="btn-primary" onClick={guestLogin}>Entrar na Lista 🎉</button>
+        <button className="btn-primary" onClick={handleLogin} disabled={loginLoading}>
+          {loginLoading ? "Entrando..." : "Entrar na Lista 🎉"}
+        </button>
       </div>
     </div>
   );

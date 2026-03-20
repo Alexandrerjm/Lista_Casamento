@@ -16,7 +16,7 @@ export function PresencaModal() {
     showPresencaStatus, setShowPresencaStatus,
   } = useApp();
 
-  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [cancelPresencaConfirm, setCancelPresencaConfirm] = useState(false);
 
   // Se já respondeu, fecha o modal automático que abre no login
   useEffect(() => {
@@ -25,7 +25,7 @@ export function PresencaModal() {
 
   // Reseta confirmação de cancelamento sempre que o modal de status fechar
   useEffect(() => {
-    if (!showPresencaStatus) setCancelConfirm(false);
+    if (!showPresencaStatus) setCancelPresencaConfirm(false);
   }, [showPresencaStatus]);
 
   function fecharConfirm() {
@@ -91,7 +91,7 @@ export function PresencaModal() {
             <p style={{ fontSize: 13, color: "#9a8070", marginTop: 4 }}>{minhaPresenca.date}</p>
           </div>
           <div className="modal-body">
-            {!cancelConfirm ? (
+            {!cancelPresencaConfirm ? (
               <>
                 <p className="modal-desc">
                   {confirmado
@@ -99,8 +99,8 @@ export function PresencaModal() {
                     : "Você registrou que não poderá comparecer."}
                 </p>
                 <div className="modal-buttons">
-                  <button className="btn-cancel" onClick={() => { setShowPresencaStatus(false); setCancelConfirm(false); }}>Fechar</button>
-                  <button className="btn-delete" onClick={() => setCancelConfirm(true)}>
+                  <button className="btn-cancel" onClick={() => { setShowPresencaStatus(false); setCancelPresencaConfirm(false); }}>Fechar</button>
+                  <button className="btn-delete" onClick={() => setCancelPresencaConfirm(true)}>
                     🗑️ Cancelar resposta
                   </button>
                 </div>
@@ -111,11 +111,11 @@ export function PresencaModal() {
                   Tem certeza? Sua resposta será removida e você poderá responder novamente.
                 </p>
                 <div className="modal-buttons">
-                  <button className="btn-cancel" onClick={() => setCancelConfirm(false)}>Não</button>
+                  <button className="btn-cancel" onClick={() => setCancelPresencaConfirm(false)}>Não</button>
                   <button className="btn-delete" onClick={() => {
                     cancelarMinhaPresenca();
                     setShowPresencaStatus(false);
-                    setCancelConfirm(false);
+                    setCancelPresencaConfirm(false);
                   }}>
                     Sim, cancelar
                   </button>

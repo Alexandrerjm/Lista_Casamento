@@ -16,6 +16,7 @@ export function GiftCard({ item }) {
   // - admin sem login de convidado → usa "admin" (mesmo valor gravado em confirmReservation)
   const currentEmail = currentGuest?.email ?? (isAdmin ? "admin" : null);
   const myRes        = currentEmail ? slots.find((s) => s.res?.email === currentEmail) : null;
+  const jaReservou   = currentEmail ? slots.some((s) => s.res?.email === currentEmail) : false;
   const resCount     = slots.filter((s) => s.res).length;
 
   return (
@@ -48,13 +49,13 @@ export function GiftCard({ item }) {
         )}
         <div className="card-footer">
           <span className="card-price">R$ {fmtPrice(item.price)}</span>
-          {myRes
-            ? cancelConfirm === myRes.key
+          {jaReservou
+            ? cancelConfirm === myRes?.key
               ? <span style={{ display: "flex", gap: 5 }}>
                   <button className="btn-cancel-yes" onClick={() => { cancelOwnReservation(myRes.key); setCancelConfirm(null); }}>Sim</button>
                   <button className="btn-cancel-no"  onClick={() => setCancelConfirm(null)}>Não</button>
                 </span>
-              : <button className="btn-unreserve" onClick={() => setCancelConfirm(myRes.key)}>Cancelar reserva</button>
+              : <button className="btn-unreserve" onClick={() => setCancelConfirm(myRes?.key)}>Cancelar reserva</button>
             : full
               ? <span className="full-badge">Indisponível</span>
               : <button className="btn-reserve" onClick={() => openReserveModal(item)}>Escolher 🎁</button>}

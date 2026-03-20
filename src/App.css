@@ -115,6 +115,7 @@ body {
   margin-bottom: 10px;
 }
 .btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-ghost {
   display: block;
@@ -1225,14 +1226,14 @@ body {
   margin-bottom: 20px;
 }
 .pix-section-title {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-size: 18px;
   font-weight: 700;
   color: #1e6b4a;
 }
 .pix-section-desc {
   margin: 0;
-  font-size: 15px;
+  font-size: 17px;
   color: #4a8c6a;
 }
 .pix-vouchers {
