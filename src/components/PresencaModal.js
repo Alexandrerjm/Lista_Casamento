@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
-import { fmtPhone } from "../hooks/utils";
+import { maskPhone } from "../hooks/utils";
 import { Field } from "./Field";
 
 export function PresencaModal() {
   const {
     settings,
     presencaName, setPresencaName,
-    nomeCompletoGuest, lastGuestInfo,
+    nomeCompletoGuest, guestPhone,
     presencaPhone, setPresencaPhone,
     presencaError, setPresencaError,
     presencaConfirm, setPresencaConfirm,
@@ -31,7 +31,7 @@ export function PresencaModal() {
   function fecharConfirm() {
     setPresencaConfirm(false);
     setPresencaName(nomeCompletoGuest);
-    setPresencaPhone(fmtPhone(lastGuestInfo.current.phone));
+    setPresencaPhone(maskPhone(guestPhone));
     setPresencaError("");
   }
 
@@ -52,8 +52,8 @@ export function PresencaModal() {
                 value={presencaName} onChange={(e) => setPresencaName(e.target.value)} />
             </Field>
             <Field label="WhatsApp / Telefone *">
-              <input className="input" placeholder="(11) 99999-9999"
-                value={presencaPhone} onChange={(e) => setPresencaPhone(e.target.value)} />
+              <input className="input" type="tel" inputMode="numeric" placeholder="(11) 99999-9999"
+                value={presencaPhone} onChange={(e) => setPresencaPhone(maskPhone(e.target.value))} />
             </Field>
             {presencaError && <p className="error-msg">{presencaError}</p>}
             <div className="presenca-modal-buttons">

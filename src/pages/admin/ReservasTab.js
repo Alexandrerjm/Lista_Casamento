@@ -1,7 +1,7 @@
 import { useApp } from "../../context/AppContext";
 import { ConfirmAction } from "../../components/ConfirmAction";
 import { useExportCSV } from "../../hooks/useExportCSV";
-import { fmtPrice } from "../../hooks/utils";
+import { fmtPrice, fmtPhone } from "../../hooks/utils";
 
 export function ReservasTab() {
   const { allReservations, deleteConfirm, setDeleteConfirm, cancelReservation } = useApp();
@@ -41,7 +41,7 @@ export function ReservasTab() {
                 <td><a className="table-link" href={`mailto:${res.email}`}>{res.email}</a></td>
                 <td>
                   <a className="table-link green" href={`https://wa.me/55${res.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
-                    📱 {res.phone}
+                    📱 {fmtPhone(res.phone)}
                   </a>
                 </td>
                 <td>{res.date}</td>

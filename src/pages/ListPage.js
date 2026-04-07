@@ -16,7 +16,7 @@ export function ListPage() {
     priceMin, setPriceMin, priceMax, setPriceMax, priceRange,
     allReservations, reserveItem,
     minhaPresenca,
-    setPixModal, setPixName, setPixError, lastGuestInfo,
+    setPixModal, setPixName, setPixError, nomeCompletoGuest,
   } = useApp();
 
   const [showMyReservations, setShowMyReservations] = useState(false);
@@ -147,6 +147,7 @@ export function ListPage() {
       {!showMyReservations && (
         <div className="pix-section">
           <div className="pix-section-header">
+            <span className="pix-section-icon">💚</span>
             <div>
               <h3 className="pix-section-title">Contribuição via Pix</h3>
               <p className="pix-section-desc">
@@ -161,7 +162,7 @@ export function ListPage() {
                 key={valor}
                 className="pix-voucher-btn"
                 onClick={() => {
-                  setPixName(lastGuestInfo.current.name || "");
+                  setPixName(nomeCompletoGuest);
                   setPixError("");
                   setPixModal(valor);
                 }}

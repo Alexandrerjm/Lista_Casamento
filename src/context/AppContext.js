@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "../hooks/supabase";
 import { DEFAULT_SETTINGS } from "../hooks/defaults";
-import { fmtPhone } from "../hooks/utils";
+import { maskPhone } from "../hooks/utils";
 // uid não é mais necessário — IDs são gerados pelo banco
 
 // ─── Mapeamento banco → app ───────────────────────────────────────────────────
@@ -45,6 +45,34 @@ function dbReservationsToMap(rows) {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const GUEST_SESSION_KEY = "lista_casamento_guest";
+const SESSION_TTL_MS    = 7 * 24 * 60 * 60 * 1000; // 7 dias
+
+function saveGuestSession(guest) {
+  try {
+    localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify({ ...guest, savedAt: Date.now() }));
+  } catch {}
+}
+
+function loadGuestSession() {
+  try {
+    const raw = localStorage.getItem(GUEST_SESSION_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (Date.now() - data.savedAt > SESSION_TTL_MS) {
+      localStorage.removeItem(GUEST_SESSION_KEY);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function clearGuestSession() {
+  try { localStorage.removeItem(GUEST_SESSION_KEY); } catch {}
+}
 
 const AppContext = createContext(null);
 
@@ -99,7 +127,6 @@ export function AppProvider({ children }) {
   const [adminTab,      setAdminTab]      = useState("reservas");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const lastGuestInfo = useRef({ name: "", phone: "" });
 
   const [editItem,     setEditItem]     = useState(null);
   const [showForm,     setShowForm]     = useState(false);
@@ -178,6 +205,21 @@ export function AppProvider({ children }) {
       setReservations(loadedResMap);
       setSettings(loadedSettings);
       setSettingsForm(loadedSettings);
+
+      // Restaura sessão do convidado após dados carregados — garante que presencas já estão disponíveis
+      const savedGuest = loadGuestSession();
+      if (savedGuest && !session) {
+        setCurrentGuest({ email: savedGuest.email, nome: savedGuest.nome, sobrenome: savedGuest.sobrenome });
+        // Pré-preenche nome e phone para modais
+        const nomeCompleto = `${savedGuest.nome || ""} ${savedGuest.sobrenome || ""}`.trim();
+        const savedPhone = (convData || []).find((c) => c.email === savedGuest.email)?.phone || "";
+        setPresencaName(nomeCompleto);
+        setPresencaPhone(savedPhone ? maskPhone(savedPhone) : "");
+        setPage("list");
+        // Abre modal de presença se convidado ainda não respondeu
+        const jaRespondeu = (presencaData || []).some((p) => p.email === savedGuest.email);
+        if (!jaRespondeu) setPresencaConfirm(true);
+      }
     } catch (err) {
       console.error("Erro ao carregar dados:", err);
       setError("Não foi possível carregar os dados. Verifique sua conexão e tente novamente.");
@@ -229,13 +271,13 @@ export function AppProvider({ children }) {
       return [...prev, convAtualizado];
     });
 
-    // Pré-preenche nome e phone nas ações futuras (phone salvo de visita anterior)
-    lastGuestInfo.current = { name: nomeCompleto, phone };
 
-    setCurrentGuest({ email, nome: guestNome.trim(), sobrenome: guestSobrenome.trim() });
+    const guest = { email, nome: guestNome.trim(), sobrenome: guestSobrenome.trim() };
+    setCurrentGuest(guest);
+    saveGuestSession(guest);
     // Pré-preenche presença com nome e phone do convidado
     setPresencaName(nomeCompleto);
-    setPresencaPhone(phone ? fmtPhone(phone) : "");
+    setPresencaPhone(phone ? maskPhone(phone) : "");
     setPage("list");
     const jaRespondeu = presencas.some((p) => p.email === email);
     if (!jaRespondeu) setPresencaConfirm(true);
@@ -262,6 +304,7 @@ export function AppProvider({ children }) {
   }
 
   function logout() {
+    clearGuestSession();
     setPage("splash");
     setCurrentGuest(null);
     setGuestEmail("");
@@ -269,7 +312,6 @@ export function AppProvider({ children }) {
     setGuestSobrenome("");
     setPresencaName("");
     setPresencaPhone("");
-    lastGuestInfo.current = { name: "", phone: "" };
     setIsAdmin(false);
   }
 
@@ -301,8 +343,8 @@ export function AppProvider({ children }) {
     setReserveQty(1);
     setReserveItem(item);
     const fallback = currentGuest ? currentGuest.email.split("@")[0] : "admin";
-    setReserveName(lastGuestInfo.current.name || fallback);
-    setReservePhone(fmtPhone(lastGuestInfo.current.phone));
+    setReserveName(nomeCompletoGuest || fallback);
+    setReservePhone(maskPhone(guestPhone));
     setReserveMsg(""); setReserveError("");
   }
 
@@ -311,6 +353,8 @@ export function AppProvider({ children }) {
   async function confirmReservation() {
     if (!reserveName.trim())  { setReserveError("Informe seu nome.");     return; }
     if (!reservePhone.trim()) { setReserveError("Informe seu telefone."); return; }
+    const cleanReservePhone = reservePhone.trim().replace(/\D/g, "");
+    if (cleanReservePhone.length < 10) { setReserveError("Telefone inválido. Informe DDD + número."); return; }
     const freeSlots = getSlots(reserveItem).filter((s) => !s.res);
     if (!freeSlots.length) { setReserveError("Sem vagas disponíveis."); return; }
     if (reserveQty > freeSlots.length) {
@@ -320,25 +364,40 @@ export function AppProvider({ children }) {
 
     const slotsToReserve = freeSlots.slice(0, reserveQty);
     const date = new Date().toLocaleString("pt-BR");
+    const currentEmail = currentGuest?.email ?? "admin";
     const rows = slotsToReserve.map((slot) => ({
       key:     slot.key,
       item_id: reserveItem.id,
       name:    reserveName.trim(),
-      email:   currentGuest?.email ?? "admin",
-      phone:   reservePhone.trim(),
+      email:   currentEmail,
+      phone:   cleanReservePhone,
       message: reserveMsg.trim(),
       date,
     }));
 
-    const { error } = await supabase.from("reservations").insert(rows);
+    // Verifica se algum slot já está ocupado por OUTRA pessoa no banco
+    // (estado local pode estar desatualizado por Realtime ou cache)
+    const keysToReserve = slotsToReserve.map((s) => s.key);
+    const { data: existing } = await supabase
+      .from("reservations").select("key, email").in("key", keysToReserve);
+    if (existing && existing.length > 0) {
+      const otherPerson = existing.find((r) => r.email !== currentEmail);
+      if (otherPerson) {
+        setReserveError("Este presente acabou de ser reservado por outra pessoa.");
+        return;
+      }
+    }
+
+    // Usa upsert para evitar erro de duplicate key
+    // (resolve: cancelamento via RLS pode falhar silenciosamente, deixando a row no banco)
+    const { error } = await supabase.from("reservations").upsert(rows, { onConflict: "key" });
     if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
 
     // Captura os dados necessários antes de zerar o estado
     const confirmedName  = reserveName.trim();
-    const confirmedPhone = reservePhone.trim().replace(/\D/g, "");
+    const confirmedPhone = cleanReservePhone;
     const confirmedItem  = reserveItem.name;
 
-    lastGuestInfo.current = { name: confirmedName, phone: confirmedPhone };
     // Persiste phone no cadastro do convidado para próximas visitas
     if (currentGuest?.email && confirmedPhone) {
       await supabase.from("convidados").update({ phone: confirmedPhone }).eq("email", currentGuest.email);
@@ -366,6 +425,7 @@ export function AppProvider({ children }) {
     if (!presencaPhone.trim()) { setPresencaError("Informe seu telefone."); return; }
 
     const cleanPhone = presencaPhone.trim().replace(/\D/g, "");
+    if (cleanPhone.length < 10) { setPresencaError("Telefone inválido. Informe DDD + número."); return; }
     const novaPresenca = {
       name:   presencaName.trim(),
       phone:  cleanPhone,
@@ -380,14 +440,13 @@ export function AppProvider({ children }) {
     if (data) setPresencas((prev) => [...prev, data]);
 
     // Persiste phone no cadastro do convidado
-    if (cleanPhone) lastGuestInfo.current = { ...lastGuestInfo.current, phone: cleanPhone };
     if (currentGuest?.email && cleanPhone) {
       await supabase.from("convidados").update({ phone: cleanPhone }).eq("email", currentGuest.email);
     }
 
     setPresencaConfirm(false);
     setPresencaName(nomeCompletoGuest);
-    setPresencaPhone(fmtPhone(lastGuestInfo.current.phone));
+    setPresencaPhone(maskPhone(guestPhone));
     setPresencaError("");
     showToast("🎉 Presença confirmada! Até lá!");
   }
@@ -396,6 +455,7 @@ export function AppProvider({ children }) {
     if (!presencaName.trim()) { setPresencaError("Informe seu nome."); return; }
 
     const cleanPhone = presencaPhone.trim().replace(/\D/g, "");
+    if (cleanPhone.length > 0 && cleanPhone.length < 10) { setPresencaError("Telefone inválido. Informe DDD + número."); return; }
     const novaAusencia = {
       name:   presencaName.trim(),
       phone:  cleanPhone,
@@ -410,14 +470,13 @@ export function AppProvider({ children }) {
     if (data) setPresencas((prev) => [...prev, data]);
 
     // Persiste phone no cadastro do convidado
-    if (cleanPhone) lastGuestInfo.current = { ...lastGuestInfo.current, phone: cleanPhone };
     if (currentGuest?.email && cleanPhone) {
       await supabase.from("convidados").update({ phone: cleanPhone }).eq("email", currentGuest.email);
     }
 
     setPresencaConfirm(false);
     setPresencaName(nomeCompletoGuest);
-    setPresencaPhone(fmtPhone(lastGuestInfo.current.phone));
+    setPresencaPhone(maskPhone(guestPhone));
     setPresencaError("");
     showToast("Recebemos sua resposta. Sentiremos sua falta! 💙", "info");
   }
@@ -435,7 +494,6 @@ export function AppProvider({ children }) {
     if (error) { setPixError(`Erro: ${error.message}`); return; }
 
     if (data) setContribuicoes((prev) => [...prev, data]);
-    lastGuestInfo.current = { ...lastGuestInfo.current, name: pixName.trim() };
     setPixModal(null);
     setPixName("");
     setPixError("");
@@ -460,9 +518,19 @@ export function AppProvider({ children }) {
   }
 
   // Verifica se o convidado atual já confirmou presença
-  const nomeCompletoGuest = currentGuest
-    ? `${currentGuest.nome || ""} ${currentGuest.sobrenome || ""}`.trim()
-    : "";
+  const nomeCompletoGuest = useMemo(
+    () => currentGuest
+      ? `${currentGuest.nome || ""} ${currentGuest.sobrenome || ""}`.trim()
+      : "",
+    [currentGuest]
+  );
+
+  const guestPhone = useMemo(
+    () => currentGuest
+      ? (convidados.find((c) => c.email === currentGuest.email)?.phone || "")
+      : "",
+    [currentGuest, convidados]
+  );
 
   const minhaPresenca = presencas.find(
     (p) => p.email === (currentGuest?.email ?? "")
@@ -482,16 +550,29 @@ export function AppProvider({ children }) {
   }
 
   async function cancelReservation(key) {
-    const { error } = await supabase.from("reservations").delete().eq("key", key);
+    const { data, error } = await supabase
+      .from("reservations").delete().eq("key", key).select();
     if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+    if (!data || data.length === 0) {
+      showToast("Não foi possível cancelar. Tente novamente.", "err");
+      return;
+    }
     removeReservation(key);
     setDeleteConfirm(null);
     showToast("Reserva cancelada.", "info");
   }
 
   async function cancelOwnReservation(key) {
-    const { error } = await supabase.from("reservations").delete().eq("key", key);
+    // Usa .select() para verificar se o delete realmente removeu algo
+    // (RLS pode bloquear silenciosamente sem retornar erro)
+    const { data, error } = await supabase
+      .from("reservations").delete().eq("key", key).select();
     if (error) { showToast(`Erro: ${error.message}`, "err"); return; }
+    if (!data || data.length === 0) {
+      // Delete não removeu nada — possível bloqueio de RLS
+      showToast("Não foi possível cancelar. Tente novamente.", "err");
+      return;
+    }
     removeReservation(key);
     showToast("Sua reserva foi cancelada.", "info");
   }
@@ -607,9 +688,8 @@ export function AppProvider({ children }) {
     guestNomeError, setGuestNomeError, convidados,
     currentGuest, filterCat, setFilterCat, searchQuery, setSearchQuery,
     contribuicoes, pixModal, setPixModal, pixName, setPixName, pixError, setPixError,
-    lastGuestInfo,
     pixDelete, setPixDelete, registrarContribuicao, deletarContribuicao,
-    nomeCompletoGuest,
+    nomeCompletoGuest, guestPhone,
     presencas, presencaName, setPresencaName, presencaPhone, setPresencaPhone,
     presencaError, setPresencaError, presencaConfirm, setPresencaConfirm,
     showPresencaStatus, setShowPresencaStatus,

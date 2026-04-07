@@ -1,8 +1,8 @@
 import { useApp } from "../context/AppContext";
-import { fmtPhone } from "../hooks/utils";
+import { maskPhone } from "../hooks/utils";
 
 export function NavBar() {
-  const { page, adminTab, isAdmin, currentGuest, allReservations, totalSlots, navigate, logout, adminLogout, showToast, minhaPresenca, nomeCompletoGuest, lastGuestInfo, setPresencaConfirm, setPresencaName, setPresencaPhone, setPresencaError, setShowPresencaStatus } = useApp();
+  const { page, adminTab, isAdmin, currentGuest, allReservations, totalSlots, navigate, logout, adminLogout, showToast, minhaPresenca, nomeCompletoGuest, guestPhone, setPresencaConfirm, setPresencaName, setPresencaPhone, setPresencaError, setShowPresencaStatus } = useApp();
 
   const handleLogout = isAdmin ? adminLogout : logout;
 
@@ -43,7 +43,7 @@ export function NavBar() {
               setShowPresencaStatus(true);
             } else {
               setPresencaName(nomeCompletoGuest);
-              setPresencaPhone(fmtPhone(lastGuestInfo.current.phone));
+              setPresencaPhone(maskPhone(guestPhone));
               setPresencaError("");
               setPresencaConfirm(true);
             }

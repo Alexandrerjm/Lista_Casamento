@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Field } from "./Field";
-import { fmtPrice } from "../hooks/utils";
+import { fmtPrice, maskPhone } from "../hooks/utils";
 
 export function ReserveModal() {
   const {
@@ -64,9 +64,11 @@ export function ReserveModal() {
           <Field label="WhatsApp / Telefone *">
             <input
               className="input"
+              type="tel"
+              inputMode="numeric"
               placeholder="(11) 99999-9999"
               value={reservePhone}
-              onChange={(e) => setReservePhone(e.target.value)}
+              onChange={(e) => setReservePhone(maskPhone(e.target.value))}
             />
           </Field>
           <Field label="Mensagem para os noivos (opcional)">
